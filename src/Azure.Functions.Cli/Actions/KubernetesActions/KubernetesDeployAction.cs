@@ -86,12 +86,9 @@ namespace Azure.Functions.Cli.Actions.KubernetesActions
             SetFlag<bool>("dry-run", "Show the deployment template", f => DryRun = f);
             SetFlag<bool>("ignore-errors", "Proceed with the deployment if a resource returns an error. Default: false", f => IgnoreErrors = f);
             SetFlag<bool>("show-service-fqdn", "display Http Trigger URL with kubernetes FQDN rather than IP. Default: false", f => ShowServiceFqdn = f);
-<<<<<<< HEAD
             SetFlag<bool>("use-git-hash-version", "Use the githash as the version for the image", f => UseGitHashAsImageVersion = f);
-=======
             SetFlag<bool>("write-configs", "Output the kubernetes configurations as YAML files instead of deploying", f => WriteConfigs = f);
             SetFlag<string>("config-file", "if --write-configs is true, write configs to this file (default: 'functions.yaml')", f => ConfigFile = f);
->>>>>>> Add the ability to emit a config file instead of deploying.
             return base.ParseArgs(args);
         }
 
