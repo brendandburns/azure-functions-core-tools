@@ -43,6 +43,8 @@ namespace Azure.Functions.Cli.Actions.KubernetesActions
         public int? MinReplicaCount { get; private set; }
         public KedaVersion? KedaVersion { get; private set; } = Kubernetes.KEDA.KedaVersion.v2;
         public bool ShowServiceFqdn { get; set; } = false;
+        public bool WriteConfigs { get; set; } = false;
+        public string ConfigFile { get; set; } = "functions.yaml";
 
         public bool UseGitHashAsImageVersion { get; set; } = false;
 
@@ -84,7 +86,12 @@ namespace Azure.Functions.Cli.Actions.KubernetesActions
             SetFlag<bool>("dry-run", "Show the deployment template", f => DryRun = f);
             SetFlag<bool>("ignore-errors", "Proceed with the deployment if a resource returns an error. Default: false", f => IgnoreErrors = f);
             SetFlag<bool>("show-service-fqdn", "display Http Trigger URL with kubernetes FQDN rather than IP. Default: false", f => ShowServiceFqdn = f);
+<<<<<<< HEAD
             SetFlag<bool>("use-git-hash-version", "Use the githash as the version for the image", f => UseGitHashAsImageVersion = f);
+=======
+            SetFlag<bool>("write-configs", "Output the kubernetes configurations as YAML files instead of deploying", f => WriteConfigs = f);
+            SetFlag<string>("config-file", "if --write-configs is true, write configs to this file (default: 'functions.yaml')", f => ConfigFile = f);
+>>>>>>> Add the ability to emit a config file instead of deploying.
             return base.ParseArgs(args);
         }
 
@@ -151,12 +158,20 @@ namespace Azure.Functions.Cli.Actions.KubernetesActions
                     // TODO: Join this with the build above so that it can run in parallel to the Kubernetes object create
                     tasks.Add(DockerHelpers.DockerPush(resolvedImageName, false));
                 }
+                if (WriteConfigs)
+                {
+                    var yaml = KubernetesHelper.SerializeResources(resources, OutputSerializationOptions.Yaml);
+                    await File.WriteAllTextAsync(ConfigFile, yaml);
+                    Console.Write($"Configuration written to {ConfigFile}");
+                    return;
+                }
+                
                 // TODO: Convert these to YAML so that we can send them as a single file
                 foreach (var resource in resources)
                 {
                     tasks.Add(KubectlHelper.KubectlApply(resource, showOutput: true, ignoreError: IgnoreErrors, @namespace: Namespace));
                 }
-
+                
                 Task.WaitAll(tasks.ToArray());
 
                 var httpService = resources
